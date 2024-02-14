@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import Navbar from "../../components/Navbar";
 
 const TrainerRegister = () => {
   const [formData, setFormData] = useState({
@@ -10,7 +11,7 @@ const TrainerRegister = () => {
     email: "",
     contactNumber: "",
     skills: "",
-    address: "",
+    city: "",
     chargePerDay: "",
   });
 
@@ -33,6 +34,8 @@ const TrainerRegister = () => {
   };
 
   return (
+    <>
+    <Navbar/>
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 py-6">
       <div className="w-full max-w-lg bg-white rounded-lg shadow-xl overflow-hidden">
         <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-4">
@@ -62,6 +65,7 @@ const TrainerRegister = () => {
         </form>
       </div>
     </div>
+    </>
   );
 };
 

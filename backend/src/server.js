@@ -5,7 +5,7 @@ const authRoutes = require("./routes/authRoutes");
 const trainerRoutes = require("./routes/trainerRoutes");
 const companyRoutes = require("./routes/companyRoutes");
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 const uri = "mongodb+srv://avinash:avinash@cluster0.rlhitli.mongodb.net/";
 
 const app = express();

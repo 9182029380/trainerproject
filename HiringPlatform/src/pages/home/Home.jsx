@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Navbar from '../../components/Navbar';
 
 const Home = () => {
   return (
     <>
+    <Navbar/>
       <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white py-12 text-center">
         <h1 className="text-4xl font-extrabold">Trainer Engagement Platform</h1>
         <p className="mt-4 text-lg text-purple-200 max-w-2xl mx-auto">

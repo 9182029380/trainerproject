@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import Navbar from "../../components/Navbar";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -19,14 +20,16 @@ const SignIn = () => {
         password,
       });
 
-      const { role, token } = response.data; // Destructure to get the role and token
+      const { role, token, } = response.data; // Destructure to get the role and token
 
       // Store the token for later use in requests
       localStorage.setItem("token", token);
+      alert(token)
+      alert(email)
 
       // Redirect user based on role
       if (role === "trainer") {
-        navigate("/trainer-dashboard");
+        navigate(`/trainer-dashboard/${email}`);
       } else if (role === "company") {
         navigate("/business-dashboard");
       } else if (role === "admin") {
@@ -42,6 +45,8 @@ const SignIn = () => {
   // Your existing JSX code remains unchanged
 
   return (
+    <>
+    <Navbar/>
     <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12">
       <div className="w-full max-w-md bg-white rounded-lg shadow-2xl overflow-hidden">
         <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-5">
@@ -102,7 +107,7 @@ const SignIn = () => {
             </div>
           )}
 
-          <p className="text-sm text-center text-gray-600">
+          {/* <p className="text-sm text-center text-gray-600">
             Don't have an account?{" "}
             <Link
               to="/signup"
@@ -110,10 +115,11 @@ const SignIn = () => {
             >
               Sign up
             </Link>
-          </p>
+          </p> */}
         </form>
       </div>
     </div>
+    </>
   );
 };
 
