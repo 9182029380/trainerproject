@@ -126,3 +126,4 @@ const MyProfile = ({ email }) => {
 }; 
  
 export default MyProfile;
+

@@ -39,9 +39,9 @@ const trainerSchema = new mongoose.Schema({
   skills: { type: String, required: true },
   city: { type: String, required: true },
   chargePerDay: { type: String, required: true },
-  trainerType: { type: String, default: "" },
-  openToTravel: { type: Boolean,default: false },
-  deliveryMode: { type: Boolean,default: false},
+  trainerType: { type: String, default: "full-time" },
+  openToTravel: { type: String ,default:"Yes"},
+  deliveryMode: { type: String,default: "Offline"},
   clients: { type: String,default: "" },
   Resume: { type: String,default: "" },
   linkedInUrl: { type: String,default: "" },
@@ -156,9 +156,24 @@ const feedbackSchema = new mongoose.Schema({
   feedback_description: String,
 });
 
+
+//current training schema
+const invoiceSchema = new mongoose.Schema({
+  poId: String,
+  businessId: String,
+  companyName: String,
+  amount: Number,
+  batches: String,
+  startDate: Date,
+  endDate: Date,
+  technologies: String,
+  paymentStatus: Boolean,
+  businessEmail: String,
+});
  
- 
- 
+
+
+// Create the model
 const Trainer = mongoose.model("Trainer", trainerSchema);
 const Company = mongoose.model("Company", companySchema);
 const PurchaseOrder = mongoose.model('PurchaseOrder', purchaseOrdersSchema);
@@ -166,7 +181,9 @@ const TrainerInvoice = mongoose.model("TrainerInvoice", trainerInvoiceSchema);
 const BusinessRequest = mongoose.model('BusinessRequest', businessRequestSchema);
 const Feedback = mongoose.model("Feedback", feedbackSchema);
 const BusinessInvoice = mongoose.model("BusinessInvoice", businessInvoiceSchema); 
+const Invoice = mongoose.model('businessinvoices', invoiceSchema);  
  
+
 app.use(cors());
 app.use(express.json());
 
@@ -493,6 +510,50 @@ app.delete('/trainer/:email', async (req, res) => {
 }); 
 
 
+// To get the count of purchase order
+app.get('/purchase-orders/count/:trainerEmail', async (req, res) => {
+  const trainerEmail = req.params.trainerEmail;
+ 
+  try {
+    const count = await PurchaseOrder.countDocuments({ trainerEmail });
+    res.json({ count });
+  } catch (error) {
+    console.error('Error retrieving count of purchase orders:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+ 
+//To get the total count of total trainer orders
+app.get('/total-trainers/:trainerEmail', async (req, res) => {
+  const trainerEmail = req.params.trainerEmail;
+ 
+  try {
+    const count = await PurchaseOrder.countDocuments({ trainerEmail, status: true });
+    res.json({ count });
+  } catch (error) {
+    console.error('Error retrieving count of trainers:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+ // Current trainngs dashboard
+ app.get('/current-trainings/:trainerEmail', async (req, res) => {
+  const trainerEmail = req.params.trainerEmail;
+ 
+  try {
+    const currentDate = new Date(); // Get the current date
+    const currentTrainings = await PurchaseOrder.find({
+      trainerEmail,
+      startDate: { $lte: currentDate }, // Start date should be less than or equal to current date
+      endDate: { $gte: currentDate } // End date should be greater than or equal to current date
+    });
+    res.json({ currentTrainings });
+  } catch (error) {
+    console.error('Error retrieving current trainings:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 //------------------------------- Company ---------------------------------- 
  
 // Company registration endpoint
@@ -567,7 +628,7 @@ app.get("/companies/:email", async (req, res) => {
   const { email } = req.params;
   // console.log(username)
   try {
-    // Find the trainer by username
+    // Find the company by username
     const company = await Company.findOne({ email });
     if (!company) {
       return res.status(404).json({ message: "company not found" });
@@ -581,18 +642,18 @@ app.get("/companies/:email", async (req, res) => {
 });
 
 
-// Update trainer by username endpoint
+// Update company by username endpoint
 app.put("/companies/:email", async (req, res) => {
   const { email: updatedEmail } = req.params; // Rename 'email' to 'updatedEmail'
  
   try {
-    // Find the trainer by email
+    // Find the company by email
     let company = await Company.findOne({ email: updatedEmail });
     if (!company) {
       return res.status(404).json({ message: "company not found" });
     }
  
-    // Update trainer fields
+    // Update company fields
     const {
       password,
       companyName,
@@ -621,7 +682,7 @@ app.put("/companies/:email", async (req, res) => {
       company.domain = domain;
     }
   
-    // Save the updated trainer
+    // Save the updated company
     company = await company.save();
  
     res.status(200).json({ message: "Trainer updated successfully", company });
@@ -630,6 +691,7 @@ app.put("/companies/:email", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 // Endpoint to submit feedback form
 app.post("/feedback", async (req, res) => {
@@ -647,6 +709,74 @@ app.post("/feedback", async (req, res) => {
 });
 
 
+// Endpoint to check if an email exists
+app.get("/check-email", async (req, res) => {
+  const { email } = req.query;
+ 
+  try {
+    // Check if the email already exists in either Trainer or Company collection
+    const trainerExists = await Trainer.exists({ email });
+    const companyExists = await Company.exists({ email });
+ 
+    // If email exists in either collection, return true; otherwise, return false
+    const emailExists = trainerExists || companyExists;
+   
+    res.json({ exists: emailExists });
+  } catch (error) {
+    console.error("Error checking email existence:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
+
+// Get all business invoices for a particular business (by email)
+app.get('/businessinvoices/:businessEmail', async (req, res) => {
+  const { businessEmail } = req.params;
+ 
+  try {
+    const businessInvoices = await BusinessInvoice.find({ businessEmail });
+    res.json(businessInvoices);
+  } catch (error) {
+    console.error('Error fetching business invoices:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+ 
+// Update paymentStatus based on business email
+app.put('/businessinvoices/:id/accept', async (req, res) => {
+  const { id } = req.params;
+ 
+  try {
+    console.log('Accepting invoice. ID:', id);
+ 
+    const updatedInvoice = await BusinessInvoice.findByIdAndUpdate(id, { paymentStatus: true }, { new: true });
+    if (!updatedInvoice) {
+      console.log('Invoice not found');
+      return res.status(404).json({ message: 'Business invoice not found' });
+    }
+ 
+    console.log('Invoice accepted successfully:', updatedInvoice);
+    res.json(updatedInvoice);
+  } catch (error) {
+    console.error('Error updating business invoice:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+//current training
+app.get('/finalinvoices/:businessEmail', async (req, res) => {
+  try {
+    const {businessEmail} = req.params;
+    const invoices = await Invoice.find({ businessEmail });
+    res.json(invoices);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
 
 // ---------------------------- Admin ----------------------------------
 

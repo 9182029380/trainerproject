@@ -1,12 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
-
-
+ 
 const BusinessRegister = () => {
+  // Define the generateUniqueId function before using it
+  const generateUniqueId = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  };
+ 
   const [formData, setFormData] = useState({
-    uniqueId: "",
+    uniqueId: generateUniqueId(),
     companyName: "",
     location: "",
     phone: "",
@@ -14,23 +18,72 @@ const BusinessRegister = () => {
     password: "",
     domain: "",
   });
-
+ 
   const [errors, setErrors] = useState({});
+  const [emailExists, setEmailExists] = useState(false);
   const navigate = useNavigate();
-
+ 
+  useEffect(() => {
+    checkEmailExistence();
+  }, [formData.email]);
+ 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    let value = e.target.value;
+ 
+    // Apply specific formatting for company name, location, and domain
+    if (["companyName", "location", "domain"].includes(e.target.name)) {
+      value = formatInput(value);
+    }
+ 
+    setFormData({ ...formData, [e.target.name]: value });
     setErrors({ ...errors, [e.target.name]: "" });
+    setEmailExists(false); // Reset email existence status on input change
   };
-
+ 
+  const formatInput = (input) => {
+    // Format string to have the first letter in uppercase and the rest in lowercase
+    return input.replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+ 
+  const checkEmailExistence = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:3001/check-email?email=${formData.email}`
+      );
+ 
+      if (response.data.exists) {
+        // If the email already exists, set the specific error message
+        setErrors({ ...errors, email: 'Email already exists. Please choose a different one.' });
+      } else {
+        // If the email doesn't exist, clear the email error
+        setErrors({ ...errors, email: '' });
+      }
+ 
+      setEmailExists(response.data.exists);
+    } catch (error) {
+      console.error("Error checking email existence:", error);
+    }
+  };
+ 
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+ 
     if (!validateForm()) {
       return;
     }
-
+ 
     try {
+      // Check email existence before submitting
+      await checkEmailExistence();
+ 
+      if (emailExists) {
+        // Handle email existence error (show a message to the user)
+        setErrors({ ...errors, email: 'Email already exists. Please choose a different one.' });
+        return;
+      }
+ 
+      // If email doesn't exist, proceed with registration
       await axios.post("http://localhost:3001/companies", formData);
       alert("Registration successful!");
       navigate('/sign-in');
@@ -39,35 +92,47 @@ const BusinessRegister = () => {
       alert("Registration failed. Please try again.");
     }
   };
-
+ 
   const validateForm = () => {
     let isValid = true;
     const newErrors = {};
-
-    // Validate uniqueId (6-digit number)
-    if (!/^\d{6}$/.test(formData.uniqueId)) {
-      newErrors.uniqueId = "Unique ID must be a 6-digit number.";
-      isValid = false;
-    }
-
-    // Validate email
-    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email is not valid.";
-      isValid = false;
-    }
-
-    // Validate other fields (required)
-    for (const [key, value] of Object.entries(formData)) {
-      if (key !== "email" && !value) {
-        newErrors[key] = "This field is required.";
-        isValid = false;
+ 
+ 
+  // Validate email format
+  if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
+  newErrors.email = "Please enter a valid email address.";
+  isValid = false;
+} else if (emailExists) {
+  newErrors.email = "Email already exists. Please choose a different one.";
+  isValid = false;
+}
+ 
+ 
+    // Validate phone (10-digit number)
+    if (!/^\d{10}$/.test(formData.phone)) {
+         newErrors.phone = "Phone number must be a 10-digit number.";
+         isValid = false;
+        }
+ 
+    // Validate password (at least 8 characters, one uppercase, one lowercase, one digit, one symbol)
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()-_=+{}|;:'",.<>?/\\]).{8,}$/.test(formData.password)) {
+    newErrors.password =
+    "Password must be at least 8 characters and contain at least one uppercase letter, one lowercase letter, one digit, and one symbol.";
+    isValid = false;
+      }    
+       
+       // Validate other fields (required)
+       for (const [key, value] of Object.entries(formData)) {
+        if (key !== "email" && key !== "phone" && !value) {
+          newErrors[key] = "This field is required.";
+          isValid = false;
+        }
       }
-    }
-
+ 
     setErrors(newErrors);
     return isValid;
   };
-
+ 
   return (
     <>
     <Navbar/>
@@ -107,5 +172,5 @@ const BusinessRegister = () => {
     </>
   );
 };
-
+ 
 export default BusinessRegister;

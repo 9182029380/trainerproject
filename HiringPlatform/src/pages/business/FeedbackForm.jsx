@@ -31,7 +31,7 @@ const FeedbackForm = () => {
       if (response.ok) {
         // Clear the form fields
         setFeedbackData({
-          company_id:"",
+          company_id: "",
           trainer_name: "",
           trainer_id: "",
           stars: "",
@@ -49,8 +49,11 @@ const FeedbackForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-md mx-auto my-8 p-6 bg-white shadow-md rounded-md">
-       <div className="mb-4">
-        <label htmlFor="company_id" className="block text-sm font-medium text-gray-600">Company Email:</label>
+      <h2 className="text-3xl font-semibold mb-6 text-center text-blue-500">Feedback to Trainer</h2>
+      <div className="mb-4">
+        <label htmlFor="company_id" className="block text-sm font-medium text-gray-600">
+          Company Email:
+        </label>
         <input
           type="email"
           id="company_id"
@@ -61,7 +64,9 @@ const FeedbackForm = () => {
         />
       </div>
       <div className="mb-4">
-        <label htmlFor="trainer_name" className="block text-sm font-medium text-gray-600">Trainer Name:</label>
+        <label htmlFor="trainer_name" className="block text-sm font-medium text-gray-600">
+          Trainer Name:
+        </label>
         <input
           type="text"
           id="trainer_name"
@@ -72,7 +77,9 @@ const FeedbackForm = () => {
         />
       </div>
       <div className="mb-4">
-        <label htmlFor="trainer_id" className="block text-sm font-medium text-gray-600">Trainer ID:</label>
+        <label htmlFor="trainer_id" className="block text-sm font-medium text-gray-600">
+          Trainer ID:
+        </label>
         <input
           type="text"
           id="trainer_id"
@@ -83,7 +90,9 @@ const FeedbackForm = () => {
         />
       </div>
       <div className="mb-4">
-        <label htmlFor="stars" className="block text-sm font-medium text-gray-600">Rating out of 10:</label>
+        <label htmlFor="stars" className="block text-sm font-medium text-gray-600">
+          Rating out of 10:
+        </label>
         <input
           type="number"
           id="stars"
@@ -96,7 +105,9 @@ const FeedbackForm = () => {
         />
       </div>
       <div className="mb-4">
-        <label htmlFor="feedback_description" className="block text-sm font-medium text-gray-600">Feedback Description:</label>
+        <label htmlFor="feedback_description" className="block text-sm font-medium text-gray-600">
+          Feedback Description:
+        </label>
         <textarea
           id="feedback_description"
           name="feedback_description"
@@ -105,7 +116,10 @@ const FeedbackForm = () => {
           className="mt-1 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
         />
       </div>
-      <button type="submit" className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 focus:outline-none focus:shadow-outline-blue active:bg-blue-800">
+      <button
+        type="submit"
+        className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 focus:outline-none focus:shadow-outline-blue active:bg-blue-800"
+      >
         Submit Feedback
       </button>
     </form>
@@ -113,4 +127,3 @@ const FeedbackForm = () => {
 };
 
 export default FeedbackForm;
-
