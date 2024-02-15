@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart, Wallet } from 'lucide-react';
+import { BarChart, Wallet, Trash } from 'lucide-react';
 import DashboardHome from './DashboardHome';
 import TrainerNavbar from './TrainerNavabar';
 import MyProfile from './MyProfile';
 import PODetails from './PODetails';
 import MyTrainings from './MyTrainings';
+import { useNavigate } from 'react-router-dom';
+
 
 
 function TrainerDashboard() {
   const [email, setEmail] = useState(null);
   const [selectedLink, setSelectedLink] = useState('dashboard');
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     // Parse the email from the URL
@@ -19,6 +23,25 @@ function TrainerDashboard() {
     const extractedEmail = url.slice(emailStartIndex, emailEndIndex);
     setEmail(extractedEmail + 'gmail.com'); // Append @gmail.com
   }, []);
+
+
+  const handleDeleteAccount = async () => {
+    try {
+      const response = await fetch(`http://localhost:3001/trainer/${email}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Redirect or handle deletion success as needed
+        alert('Account deleted successfully');
+        navigate('/sign-in')
+      } else {
+        console.error('Error deleting account');
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+    }
+  };
 
 
 
@@ -85,15 +108,37 @@ function TrainerDashboard() {
               <Wallet className="h-5 w-5" aria-hidden="true" />
               <span className="mx-2 text-sm font-medium">Purchase Order</span>
             </div>
+
+            <div
+              onClick={() => setSelectedLink('deleteAccount')}
+              className={`flex transform items-center rounded-lg px-3 py-2 text-red-500 transition-colors duration-300 hover:bg-gray-100 hover:text-gray-700 ${
+                selectedLink === 'deleteAccount' ? 'bg-gray-100 text-gray-700' : ''
+              }`}
+            >
+              <Trash className="h-5 w-5" aria-hidden="true" />
+              <span className="mx-2  text-sm font-medium cursor-pointer">Delete My Account</span>
+            </div>
           </nav>
         </div>
       </aside>
 
       <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-200">
-        {renderComponent()}
+        {selectedLink === 'deleteAccount' ? (
+          <div>
+            <p>Are you sure you want to delete your account?</p>
+            <button
+              className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              onClick={handleDeleteAccount}
+            >
+              Delete My Account
+            </button>
+          </div>
+        ) : (
+          renderComponent()
+        )}
       </main>
     </div>
-    </>
+    </> 
   );
 }
 

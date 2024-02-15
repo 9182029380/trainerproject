@@ -352,6 +352,7 @@ app.put('/purchase-orders/:id/reject', async (req, res) => {
  
  
 // PUT route to raise an invoice for a purchase order 
+
 app.put('/raise-invoice/:id', async (req, res) => {
   const purchaseOrderId = req.params.id;
  
@@ -372,7 +373,7 @@ app.put('/raise-invoice/:id', async (req, res) => {
     const newInvoice = new TrainerInvoice({
       trainerId: trainer._id,
       poId: purchaseOrder._id,
-      businessId: purchaseOrder.businessId,
+      businessId: purchaseOrder.businessRequestId,
       name: trainer.name,
       email: trainer.email,
       amount: purchaseOrder.amount,
@@ -393,8 +394,7 @@ app.put('/raise-invoice/:id', async (req, res) => {
   }
 });
  
-
-// GET Trainer Invoice by ID
+// GET Trainer Invoice by email
 app.get('/invoices/:email', async (req, res) => {
   try {
     const trainerInvoices = await TrainerInvoice.find({ email: req.params.email });
@@ -408,6 +408,45 @@ app.get('/invoices/:email', async (req, res) => {
   }
 });
  
+// GET invoice details by ID
+app.get('/invoices/:id/download', async (req, res) => {
+  try {
+    const trainingId = req.params.id;
+    const training = await TrainerInvoice.findById(trainingId);
+    if (!training) {
+      return res.status(404).json({ message: 'Invoice not found' });
+    }
+    res.json(training);
+  } catch (error) {
+    console.error('Error fetching invoice:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+ 
+//Api for deleting a trainer account
+app.delete('/trainer/:email', async (req, res) => {
+  const email = req.params.email;
+ 
+  try {
+    // Find the trainer by ID
+    const trainer = await Trainer.findOne({ email });
+ 
+    if (!trainer) {
+      return res.status(404).json({ error: 'Trainer not found' });
+    }
+ 
+    // Perform additional checks if needed (e.g., ensure the request is coming from the authenticated trainer)
+ 
+    // Delete the trainer
+    await trainer.deleteOne();
+ 
+    res.json({ message: 'Trainer account deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}); 
+
 
 //------------------------------- Company ---------------------------------- 
  
