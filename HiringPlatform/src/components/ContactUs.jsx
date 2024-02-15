@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Navbar from './Navbar';
 
 const ContactUs = () => {
   const [formData, setFormData] = useState({
@@ -27,6 +28,8 @@ const ContactUs = () => {
   };
 
   return (
+    <>
+    <Navbar/>
     <div className="container mx-auto py-8 flex justify-center items-center">
       <div className="bg-gray-100 shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-lg">
         <h1 className="text-3xl font-bold mb-6 text-center">Contact Us</h1>
@@ -109,6 +112,7 @@ const ContactUs = () => {
         </form>
       </div>
     </div>
+    </>
   );
 };
 

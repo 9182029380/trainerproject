@@ -1,7 +1,10 @@
 import React from 'react';
+import Navbar from './Navbar';
 
 const About = () => {
   return (
+    <>
+    <Navbar/>
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-6">About Trainer Engagement Platform</h1>
       <div className="bg-white shadow-lg rounded-lg overflow-hidden mb-8">
@@ -40,6 +43,7 @@ const About = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
