@@ -31,7 +31,7 @@ const SignIn = () => {
       if (role === "trainer") {
         navigate(`/trainer-dashboard/${email}`);
       } else if (role === "company") {
-        navigate("/business-dashboard");
+        navigate(`/business-dashboard/${email}`);
       } else if (role === "admin") {
         navigate("/admin-dashboard");
       }

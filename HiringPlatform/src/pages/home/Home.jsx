@@ -25,13 +25,13 @@ const Home = () => {
           </Link>
         </div>
 
-        <div className="company bg-gradient-to-bl from-green-100 to-white p-8 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 ease-in-out">
+        <div className="company bg-purple-100 p-8 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 ease-in-out">
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">For Companies</h2>
-          <Link to="/sign-in" className="block bg-green-500 text-white py-2 px-4 rounded-md mb-2 hover:bg-green-600 transition duration-300 ease-in-out text-center">
+          <Link to="/sign-in" className="block bg-purple-600 text-white py-2 px-4 rounded-md mb-2 hover:bg-purple-700 transition duration-300 ease-in-out text-center">
             Login
           </Link>
           <p className="text-gray-600">Don't have an account?</p>
-          <Link to="/business-register" className="text-green-500 hover:underline">
+          <Link to="/business-register" className="text-purple-600 hover:underline">
             Register Now
           </Link>
         </div>

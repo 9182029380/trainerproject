@@ -6,12 +6,16 @@ const jwt = require("jsonwebtoken");
 const secretKey = "yourSecretKey";
 const Schema = mongoose.Schema;
 const { Timestamp } = require('mongodb');
- 
+const { ObjectId } = require('mongodb');
+const bodyParser = require('body-parser');
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 const uri = "mongodb+srv://avinash:avinash@cluster0.rlhitli.mongodb.net/";
+app.use(bodyParser.json());
  
-// Connect to MongoDB Atlas
+
+//----------------- Connect to MongoDB Atlas--------------------
 mongoose
   .connect(uri, {
     useNewUrlParser: true,
@@ -21,58 +25,31 @@ mongoose
   .then(() => console.log("Connected to MongoDB Atlas"))
   .catch((err) => console.error("Error connecting to MongoDB Atlas:", err));
  
-  const educationSchema = new mongoose.Schema({
-    degree: { type: String, required: true,default: "" },
-    institution: { type: String, required: true,default: "" },
-    year: { type: Number, required: true,default: "" },
-  });
- 
-  // Define Links and URLs schema
-  const linksSchema = new mongoose.Schema({
-    linkedInUrl: { type: String,default: "" },
-    resumeUrl: { type: String,default: "" },
-  });
- 
-  const trainerSchema = new mongoose.Schema({
-    username: { type: String, required: true,unique: true },
-    password: { type: String, required: true },
-    name: { type: String, required: true },
-    email: { type: String, required: true,unique: true },
-    contactNumber: { type: String, required: true },
-    skills: { type: String, required: true },
-    city: { type: String, required: true },
-    chargePerDay: { type: String, required: true },
-    trainerType: { type: String, default: "" },
-    openToTravel: { type: Boolean,default: false },
-    deliveryMode: { type: Boolean,default: false},
-    clients: { type: String,default: "" },
-    education: [educationSchema], // Array of education objects
-    links: [linksSchema], // Nested schema for links and URLs
-    role: { type: String, default: "trainer" },
-  });
- 
- 
-// Define Company schema
-const companySchema = new mongoose.Schema({
-  uniqueId: { type: String, required: true },
-  companyName: { type: String, required: true },
-  location: { type: String, required: true },
-  phone: { type: String, required: true },
-  email: { type: String, required: true },
+  
+
+//------------------- All schemas ------------------------------
+
+// Define Trainer schema
+const trainerSchema = new mongoose.Schema({
+  username: { type: String, required: true,unique: true },
   password: { type: String, required: true },
-  domain: { type: String, required: true },
-  role: { type: String, default: "company" },
+  name: { type: String, required: true },
+  email: { type: String, required: true,unique: true },
+  contactNumber: { type: String, required: true },
+  skills: { type: String, required: true },
+  city: { type: String, required: true },
+  chargePerDay: { type: String, required: true },
+  trainerType: { type: String, default: "" },
+  openToTravel: { type: Boolean,default: false },
+  deliveryMode: { type: Boolean,default: false},
+  clients: { type: String,default: "" },
+  Resume: { type: String,default: "" },
+  linkedInUrl: { type: String,default: "" },
+  role: { type: String, default: "trainer" },
 });
  
-const purchaseOrdersSchema = new mongoose.Schema({
-  businessId: { type: String, required: true },
-  trainerEmail: { type: String, required: true },
-  amount: { type: Number, required: true },
-  status: { type: Boolean, required: true },
-  endDate: { type: Date, required: true },
-  startDate: { type: Date, required: true },
-});
- 
+
+// trainer invoice schema
 const trainerInvoiceSchema = new mongoose.Schema({
   trainerId: { type: Schema.Types.ObjectId, ref: 'Trainer', required: true },
   poId: { type: Schema.Types.ObjectId, ref: 'PurchaseOrder', required: true },
@@ -87,6 +64,53 @@ const trainerInvoiceSchema = new mongoose.Schema({
   endDate: { type: Date, required: true },
  
 });
+
+
+// Define Company schema
+const companySchema = new mongoose.Schema({
+  uniqueId: { type: String, required: true },
+  companyName: { type: String, required: true },
+  location: { type: String, required: true },
+  phone: { type: String, required: true },
+  email: { type: String, required: true },
+  password: { type: String, required: true },
+  domain: { type: String, required: true },
+  role: { type: String, default: "company" },
+});
+
+
+//business request schemas
+const businessRequestSchema = new mongoose.Schema({
+  uniqueId: { type: mongoose.Schema.Types.ObjectId, ref: 'companies', required: true },
+  batchName: { type: String, required: true },
+  technology: { type: String, required: true },
+  numberOfTrainees: { type: Number, required: true },
+  durationOfTraining: { type: Number, required: true },
+  startDate: { type: Date, required: true },
+  endDate: { type: Date, required: true },
+  trainingBudget: { type: Number, required: true }
+});
+ 
+
+// Define the feedback schema
+const feedbackSchema = new mongoose.Schema({
+  company_id: String,
+  trainer_name: String,
+  trainer_id: String,
+  stars: Number,
+  feedback_description: String,
+});
+
+
+// purchase order schema
+const purchaseOrdersSchema = new mongoose.Schema({
+  businessId: { type: String, required: true },
+  trainerEmail: { type: String, required: true },
+  amount: { type: Number, required: true },
+  status: { type: Boolean, required: true },
+  endDate: { type: Date, required: true },
+  startDate: { type: Date, required: true },
+});
  
  
  
@@ -94,11 +118,14 @@ const Trainer = mongoose.model("Trainer", trainerSchema);
 const Company = mongoose.model("Company", companySchema);
 const PurchaseOrder = mongoose.model('PurchaseOrder', purchaseOrdersSchema);
 const TrainerInvoice = mongoose.model('TrainerInvoice',trainerInvoiceSchema);
+const BusinessRequest = mongoose.model('BusinessRequest', businessRequestSchema);
+const Feedback = mongoose.model("Feedback", feedbackSchema);
  
  
 app.use(cors());
 app.use(express.json());
- 
+
+// JWT Authentication 
 const authenticateJWT = (req, res, next) => {
   const authHeader = req.headers.authorization;
  
@@ -128,6 +155,9 @@ const authorizeRole = (roles) => (req, res, next) => {
   }
 };
  
+
+// --------------------- Trainers ------------------------------------------
+
 // Trainer registration endpoint
 app.post("/trainers", async (req, res) => {
   try {
@@ -141,9 +171,9 @@ app.post("/trainers", async (req, res) => {
       city,
       chargePerDay,
     } = req.body;
- 
+
     const hashedPassword = await bcrypt.hash(password, 10);
- 
+
     const newTrainer = new Trainer({
       username,
       password: hashedPassword,
@@ -154,7 +184,7 @@ app.post("/trainers", async (req, res) => {
       city,
       chargePerDay,
     });
- 
+
     await newTrainer.save();
     res.status(201).json({ message: "Trainer registered successfully" });
   } catch (error) {
@@ -162,7 +192,8 @@ app.post("/trainers", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
- 
+
+
 // Find trainer by username endpoint
 app.get("/trainers/:email", async (req, res) => {
   const { email } = req.params;
@@ -173,26 +204,26 @@ app.get("/trainers/:email", async (req, res) => {
     if (!trainer) {
       return res.status(404).json({ message: "Trainer not found" });
     }
- 
+
     res.status(200).json(trainer);
   } catch (error) {
     console.error("Error finding trainer:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
- 
- 
+
+
 // Update trainer by username endpoint
 app.put("/trainers/:email", async (req, res) => {
   const { email: updatedEmail } = req.params; // Rename 'email' to 'updatedEmail'
- 
+
   try {
     // Find the trainer by email
     let trainer = await Trainer.findOne({ email: updatedEmail });
     if (!trainer) {
       return res.status(404).json({ message: "Trainer not found" });
     }
- 
+
     // Update trainer fields
     const {
       password,
@@ -206,10 +237,10 @@ app.put("/trainers/:email", async (req, res) => {
       openToTravel,
       deliveryMode,
       clients,
-      education,
-      links
+      Resume,
+      linkedInUrl
     } = req.body;
- 
+
     if (password) {
       trainer.password = password;
     }
@@ -243,22 +274,23 @@ app.put("/trainers/:email", async (req, res) => {
     if (clients) {
       trainer.clients = clients;
     }
-    if (education) {
-      trainer.education = education;
+    if (Resume) {
+      trainer.Resume = Resume;
     }
-    if (links) {
-      trainer.links = links;
+    if (linkedInUrl) {
+      trainer.linkedInUrl = linkedInUrl;
     }
- 
+
     // Save the updated trainer
     trainer = await trainer.save();
- 
+
     res.status(200).json({ message: "Trainer updated successfully", trainer });
   } catch (error) {
     console.error("Error updating trainer:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
  
 //get all the details of PO for a particular trainer id
 app.get('/purchase-orders/:email', async (req, res) => {
@@ -319,8 +351,7 @@ app.put('/purchase-orders/:id/reject', async (req, res) => {
 });
  
  
-// PUT route to raise an invoice for a purchase order
- 
+// PUT route to raise an invoice for a purchase order 
 app.put('/raise-invoice/:id', async (req, res) => {
   const purchaseOrderId = req.params.id;
  
@@ -362,6 +393,7 @@ app.put('/raise-invoice/:id', async (req, res) => {
   }
 });
  
+
 // GET Trainer Invoice by ID
 app.get('/invoices/:email', async (req, res) => {
   try {
@@ -376,7 +408,8 @@ app.get('/invoices/:email', async (req, res) => {
   }
 });
  
- 
+
+//------------------------------- Company ---------------------------------- 
  
 // Company registration endpoint
 app.post("/companies", async (req, res) => {
@@ -412,7 +445,128 @@ app.post("/companies", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+
+// Business request for trainer
+app.post('/businessrequest', authenticateJWT, async (req, res) => {
+  try {
+    console.log(req);
+    // Extract the company's uniqueId from the authenticated user
+    const companyDocument = await Company.findById(req.user.id);
+    const companyUniqueId = companyDocument._id ;
+   
  
+    // Ensure that the authenticated user is a company and has a uniqueId
+    if (!companyUniqueId) {
+      return res.status(400).json({ error: 'Company uniqueId is required.' });
+    }
+ 
+    // Create a new business request with the company's uniqueId
+    const newBusinessRequest = await BusinessRequest.create({
+      ...req.body,
+      uniqueId: companyUniqueId,
+    });
+ 
+    console.log('Business Request Data inserted successfully:', newBusinessRequest);
+ 
+    return res.status(200).json({ message: 'Business Request Data submitted successfully' });
+  } catch (error) {
+    console.error('Error inserting data into MongoDB:', error);
+    console.log(req.uniqueId);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+// Find company by username endpoint
+app.get("/companies/:email", async (req, res) => {
+  const { email } = req.params;
+  // console.log(username)
+  try {
+    // Find the trainer by username
+    const company = await Company.findOne({ email });
+    if (!company) {
+      return res.status(404).json({ message: "company not found" });
+    }
+ 
+    res.status(200).json(company);
+  } catch (error) {
+    console.error("Error finding trainer:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+
+// Update trainer by username endpoint
+app.put("/companies/:email", async (req, res) => {
+  const { email: updatedEmail } = req.params; // Rename 'email' to 'updatedEmail'
+ 
+  try {
+    // Find the trainer by email
+    let company = await Company.findOne({ email: updatedEmail });
+    if (!company) {
+      return res.status(404).json({ message: "company not found" });
+    }
+ 
+    // Update trainer fields
+    const {
+      password,
+      companyName,
+      email,
+      location,
+      phone,
+      domain
+    } = req.body;
+ 
+    if (password) {
+      company.password = password;
+    }
+    if (companyName) {
+      company.companyName = companyName;
+    }
+    if (email) {
+      company.email = email;
+    }
+    if (location) {
+      company.location = location;
+    }
+    if (phone) {
+      company.phone = phone;
+    }
+    if (domain) {
+      company.domain = domain;
+    }
+  
+    // Save the updated trainer
+    company = await company.save();
+ 
+    res.status(200).json({ message: "Trainer updated successfully", company });
+  } catch (error) {
+    console.error("Error updating trainer:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Endpoint to submit feedback form
+app.post("/feedback", async (req, res) => {
+  const feedbackData = req.body;
+ 
+  try {
+    const newFeedback = new Feedback(feedbackData);
+    await newFeedback.save();
+ 
+    res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+});
+
+
+
+// ---------------------------- Admin ----------------------------------
+
+//login logic
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   console.log(email, password);
@@ -442,10 +596,14 @@ app.post("/login", async (req, res) => {
  
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (isPasswordValid) {
-      // Generate token
-      const token = jwt.sign({ email: user.email, role }, secretKey, {
+      // Generate token with addiional uniqueId for company users
+      const tokenPayload = {email: user.email, role, id:user._id};
+
+
+      const token = jwt.sign(tokenPayload, secretKey, {
         expiresIn: "1h",
       });
+
       res.status(200).json({ role, token }); // Send the token to the client
     } else {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -456,6 +614,7 @@ app.post("/login", async (req, res) => {
   }
 });
  
+
 // Modify the admin-dashboard route to apply authentication middleware
 app.get(
   "/admin-dashboard",
@@ -467,6 +626,7 @@ app.get(
   }
 );
  
+
 app.get(
   "/trainer-dashboard",
   authenticateJWT,
@@ -477,6 +637,7 @@ app.get(
   }
 );
  
+
 app.get(
   "/business-dashboard",
   authenticateJWT,
@@ -487,6 +648,7 @@ app.get(
   }
 );
  
+
 app.get("/trainers", async (req, res) => {
   try {
     const trainers = await Trainer.find({}, { password: 0 });
@@ -497,6 +659,7 @@ app.get("/trainers", async (req, res) => {
   }
 });
  
+
 app.get("/companies", async (req, res) => {
   try {
     const companies = await Company.find();
@@ -506,7 +669,10 @@ app.get("/companies", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
- 
+
+
+// ----------------------------- Listening ----------------------------------------------
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

@@ -46,7 +46,7 @@ function App() {
           }
         /> */}
         <Route
-          path="/business-dashboard"
+          path="/business-dashboard/:email"
           element={
             <ProtectedRoute component={BusinessDashboard} roles={["company"]} />
           }
