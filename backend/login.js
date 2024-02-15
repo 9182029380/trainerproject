@@ -49,22 +49,6 @@ const trainerSchema = new mongoose.Schema({
 });
  
 
-// trainer invoice schema
-const trainerInvoiceSchema = new mongoose.Schema({
-  trainerId: { type: Schema.Types.ObjectId, ref: 'Trainer', required: true },
-  poId: { type: Schema.Types.ObjectId, ref: 'PurchaseOrder', required: true },
-  businessId: { type: Schema.Types.ObjectId, ref: 'Company', required: true },
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  amount: { type: String, required: true },
-  contactNumber : {type: String, required:true},
-  raiseStatus: { type: Boolean, required: true,default:true},
-  paymentStatus: { type: Boolean, required: true },
-  startDate: { type: Date, required: true },
-  endDate: { type: Date, required: true },
- 
-});
-
 
 // Define Company schema
 const companySchema = new mongoose.Schema({
@@ -77,20 +61,91 @@ const companySchema = new mongoose.Schema({
   domain: { type: String, required: true },
   role: { type: String, default: "company" },
 });
+ 
 
-
-//business request schemas
+// Business Request schema
 const businessRequestSchema = new mongoose.Schema({
-  uniqueId: { type: mongoose.Schema.Types.ObjectId, ref: 'companies', required: true },
+  uniqueId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Company", // Reference to the 'Company' collection
+    required: true,
+  },
   batchName: { type: String, required: true },
   technology: { type: String, required: true },
   numberOfTrainees: { type: Number, required: true },
-  durationOfTraining: { type: Number, required: true },
+  durationOfTraining: { type: String, required: true },
   startDate: { type: Date, required: true },
   endDate: { type: Date, required: true },
-  trainingBudget: { type: Number, required: true }
+  trainingBudget: { type: Number, required: true },
 });
- 
+
+
+//Purchase Order Schema
+const purchaseOrdersSchema = new mongoose.Schema({
+  businessRequestId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Company", // Assuming the reference is to the Company collection
+    required: true,
+  },
+  trainer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Trainer",
+    required: true,
+  },
+  trainerEmail: { type: String, required: true },
+  amount: { type: Number, required: true },
+  status: { type: Boolean, required: true },
+  endDate: { type: Date, required: true },
+  startDate: { type: Date, required: true },
+});
+
+const businessInvoiceSchema = new mongoose.Schema({
+  poId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "PurchaseOrder",
+    required: true,
+  },
+  businessId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Company",
+    required: true,
+  },
+  companyName: { type: String, required: true },
+  amount: { type: Number, required: true },
+  batches: { type: String, required: true },
+  startDate: { type: Date, required: true },
+  endDate: { type: Date, required: true },
+  technologies: { type: String, required: true },
+  paymentStatus: { type: Boolean, required: true, default: false },
+  businessEmail: { type: String, required: true },
+});
+
+const trainerInvoiceSchema = new mongoose.Schema({
+  trainerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Trainer",
+    required: true,
+  },
+  poId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "PurchaseOrder",
+    required: true,
+  },
+  businessId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Company",
+    required: true,
+  },
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  amount: { type: String, required: true },
+  contactNumber: { type: String, required: true },
+  raiseStatus: { type: Boolean, required: true, default: true },
+  paymentStatus: { type: Boolean, required: true },
+  startDate: { type: Date, required: true },
+  endDate: { type: Date, required: true },
+});
+
 
 // Define the feedback schema
 const feedbackSchema = new mongoose.Schema({
@@ -101,26 +156,16 @@ const feedbackSchema = new mongoose.Schema({
   feedback_description: String,
 });
 
-
-// purchase order schema
-const purchaseOrdersSchema = new mongoose.Schema({
-  businessId: { type: String, required: true },
-  trainerEmail: { type: String, required: true },
-  amount: { type: Number, required: true },
-  status: { type: Boolean, required: true },
-  endDate: { type: Date, required: true },
-  startDate: { type: Date, required: true },
-});
  
  
  
 const Trainer = mongoose.model("Trainer", trainerSchema);
 const Company = mongoose.model("Company", companySchema);
 const PurchaseOrder = mongoose.model('PurchaseOrder', purchaseOrdersSchema);
-const TrainerInvoice = mongoose.model('TrainerInvoice',trainerInvoiceSchema);
+const TrainerInvoice = mongoose.model("TrainerInvoice", trainerInvoiceSchema);
 const BusinessRequest = mongoose.model('BusinessRequest', businessRequestSchema);
 const Feedback = mongoose.model("Feedback", feedbackSchema);
- 
+const BusinessInvoice = mongoose.model("BusinessInvoice", businessInvoiceSchema); 
  
 app.use(cors());
 app.use(express.json());
@@ -664,7 +709,6 @@ app.get(
     res.send("Welcome to the Admin Dashboard");
   }
 );
- 
 
 app.get(
   "/trainer-dashboard",
@@ -675,7 +719,6 @@ app.get(
     res.send("Welcome to the Trainer Dashboard");
   }
 );
- 
 
 app.get(
   "/business-dashboard",
@@ -686,20 +729,18 @@ app.get(
     res.send("Welcome to the Business Dashboard");
   }
 );
- 
 
-app.get("/trainers", async (req, res) => {
+app.get("/admintrainers", async (req, res) => {
   try {
-    const trainers = await Trainer.find({}, { password: 0 });
+    const trainers = await Trainer.find();
     res.status(200).json(trainers);
   } catch (error) {
     console.error("Error fetching trainers:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
- 
 
-app.get("/companies", async (req, res) => {
+app.get("/admincompanies", async (req, res) => {
   try {
     const companies = await Company.find();
     res.status(200).json(companies);
@@ -709,6 +750,332 @@ app.get("/companies", async (req, res) => {
   }
 });
 
+// Update trainer by ID
+app.put("/admintrainers/:id", async (req, res) => {
+  const { id } = req.params; // Get the trainer ID from the URL params
+  const updatedData = req.body; // Get the updated trainer data from the request body
+  try {
+    // Find the trainer by ID and update their details
+    const updatedTrainer = await Trainer.findByIdAndUpdate(id, updatedData, {
+      new: true,
+    });
+    if (!updatedTrainer) {
+      return res.status(404).json({ message: "Trainer not found" });
+    }
+    res.status(200).json(updatedTrainer);
+  } catch (error) {
+    console.error("Error updating trainer:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Delete trainer by ID
+app.delete("/admintrainers/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    await Trainer.findByIdAndDelete(id);
+    res.status(200).json({ message: "Trainer deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting trainer:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Updating company details by ID
+app.put("/admincompanies/:id", async (req, res) => {
+  const companyId = req.params.id;
+  const updatedCompanyData = req.body; // New data for the company
+
+  try {
+    // Find the company by ID and update its details
+    const company = await Company.findByIdAndUpdate(
+      companyId,
+      updatedCompanyData,
+      { new: true }
+    );
+    res.json(company);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating company details", error });
+  }
+});
+
+// Deleting company details by ID
+app.delete("/admincompanies/:id", async (req, res) => {
+  const companyId = req.params.id;
+
+  try {
+    // Find the company by ID and delete it
+    await Company.findByIdAndDelete(companyId);
+    res.json({ message: "Company deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting company", error });
+  }
+});
+
+//API to display all business requests
+app.get("/adminbusinessrequests", async (req, res) => {
+  try {
+    // Fetch data from businessrequest collection and populate companyName from companies collection
+    const data = await BusinessRequest.find().populate({
+      path: "uniqueId", // Field containing the reference
+      model: "Company", // Model to populate from
+      select: "companyName", // Field to select from the referenced document
+    });
+    res.json(data);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+//API for fetching all business requests and inputing the trainer details
+app.get("/adminpurchase-orders", async (req, res) => {
+  try {
+    // Fetch all purchase orders and populate the trainer and businessId fields
+    const purchaseOrders = await PurchaseOrder.find()
+      .populate({
+        path: "trainer",
+        select: "name", // Select the fields you want to populate from the Trainer collection
+        model: "Trainer",
+      })
+      .populate({
+        path: "businessRequestId",
+        select: "companyName", // Select the fields you want to populate from the Company collection
+        model: "Company",
+      });
+
+    res.status(200).json(purchaseOrders);
+  } catch (error) {
+    console.error("Error fetching purchase orders:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.post("/adminpurchase-orders", async (req, res) => {
+  // Extract data from the request body
+  const {
+    businessRequestId,
+    trainerEmail,
+    amount,
+    status,
+    startDate,
+    endDate,
+  } = req.body;
+
+  try {
+    // Find the trainer based on the provided email
+    const trainer = await Trainer.findOne({ email: trainerEmail });
+
+    if (!trainer) {
+      return res.status(404).json({ message: "Trainer not found" });
+    }
+
+    // Create a new PurchaseOrder instance with the trainer's ObjectId
+    const newPurchaseOrder = new PurchaseOrder({
+      businessRequestId,
+      trainer: trainer._id, // Store the ObjectId of the trainer
+      trainerEmail,
+      amount,
+      status,
+      startDate,
+      endDate,
+    });
+
+    // Save the new PurchaseOrder instance to the database
+    const savedPurchaseOrder = await newPurchaseOrder.save();
+    res.status(201).json(savedPurchaseOrder);
+  } catch (error) {
+    console.error("Error creating purchase order:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// API to delete the business request
+app.delete("/adminbusinessrequests/:id", async (req, res) => {
+  const requestId = req.params.id;
+
+  try {
+    // Find the business request record by ID and delete it
+    const deletedRequest = await BusinessRequest.findByIdAndDelete(requestId);
+
+    if (!deletedRequest) {
+      // If the record with the given ID is not found, return a 404 status
+      return res.status(404).json({ message: "Business request not found" });
+    }
+
+    // If the record is successfully deleted, return a success message
+    res.status(200).json({ message: "Business request deleted successfully" });
+  } catch (error) {
+    // If an error occurs during deletion, return a 500 status and error message
+    console.error("Error deleting business request:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+//API for displaying purchase order details
+app.get("/adminpurchase-orders-details", async (req, res) => {
+  try {
+    const purchaseOrdersDetails = await PurchaseOrder.aggregate([
+      {
+        $lookup: {
+          from: "trainers",
+          localField: "trainer",
+          foreignField: "_id",
+          as: "trainerDetails",
+        },
+      },
+      {
+        $unwind: "$trainerDetails",
+      },
+      {
+        $lookup: {
+          from: "businessrequests",
+          localField: "businessRequestId",
+          foreignField: "_id",
+          as: "businessRequestDetails",
+        },
+      },
+      {
+        $unwind: "$businessRequestDetails",
+      },
+      {
+        $lookup: {
+          from: "companies",
+          localField: "businessRequestDetails.uniqueId",
+          foreignField: "_id",
+          as: "companyDetails",
+        },
+      },
+      {
+        $unwind: "$companyDetails",
+      },
+      {
+        $project: {
+          trainerName: "$trainerDetails.name",
+          trainerEmail: "$trainerDetails.email",
+          skills: "$trainerDetails.skills",
+          chargePerDay: "$trainerDetails.chargePerDay",
+          companyName: "$companyDetails.companyName",
+          location: "$companyDetails.location",
+          companyEmail: "$companyDetails.email",
+          companyPhone: "$companyDetails.phone",
+        },
+      },
+    ]);
+
+    if (!purchaseOrdersDetails) {
+      return res.status(404).json({ message: "No purchase orders found" });
+    }
+
+    //console.log("Aggregated data:", purchaseOrdersDetails);
+    res.status(200).json(purchaseOrdersDetails);
+  } catch (error) {
+    console.error("Error fetching purchase orders details:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
+// Assuming you have TrainerInvoice model defined and mongoose set up
+app.get("/admintrainerinvoices", async (req, res) => {
+  try {
+    const trainerInvoices = await TrainerInvoice.find();
+    res.json(trainerInvoices);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post("/adminbusinessinvoices", async (req, res) => {
+  try {
+    const {
+      poId,
+      businessId,
+      totalAmount,
+      batches,
+      startDate,
+      endDate,
+      technologies,
+      paymentStatus,
+    } = req.body;
+
+    const purchaseOrder = await PurchaseOrder.findById(poId);
+    const businessRequest = await BusinessRequest.findById(
+      purchaseOrder.businessRequestId
+    );
+    const company = await Company.findById(businessRequest.uniqueId);
+
+    const companyName = company.companyName;
+    const amount = businessRequest.trainingBudget;
+    const businessEmail = company.email;
+    // Create a new business invoice
+    const newInvoice = new BusinessInvoice({
+      poId,
+      businessId,
+      companyName,
+      amount,
+      batches,
+      startDate,
+      endDate,
+      technologies,
+      paymentStatus,
+      businessEmail,
+    });
+    console.log(newInvoice);
+
+    // Save the new invoice to the database
+    await newInvoice.save();
+
+    res.status(201).json(newInvoice);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+app.get("/adminTechnologySell", async (req, res) => {
+  try {
+    // Aggregate the count of each technology, using case-insensitive grouping
+    const technologyData = await BusinessRequest.aggregate([
+      {
+        $group: {
+          _id: { $toLower: { $ifNull: ["$technology", ""] } }, // Convert field values to lowercase, handling null values
+          count: { $sum: 1 }, // Count occurrences of each unique value
+        },
+      },
+      { $sort: { count: -1 } }, // Sort by count in descending order
+    ]);
+
+    // Transform the data into an array of objects with technology and count properties
+    const formattedData = technologyData.map((item) => ({
+      technology: item._id,
+      count: item.count,
+    }));
+
+    res.json(formattedData);
+  } catch (error) {
+    console.error("Error fetching technology data:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get("/adminbusinessrequestsGraph", async (req, res) => {
+  try {
+    // Fetch all business requests from the database
+    const businessRequests = await BusinessRequest.find();
+
+    // Group business requests by quarter
+    const quarterlyRevenue = businessRequests.reduce((acc, request) => {
+      const quarter = Math.floor((request.startDate.getMonth() + 3) / 3);
+      acc[quarter - 1] = (acc[quarter - 1] || 0) + request.trainingBudget;
+      return acc;
+    }, Array(4).fill(0));
+
+    res.json(quarterlyRevenue);
+  } catch (error) {
+    console.error("Error fetching quarterly revenue:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 // ----------------------------- Listening ----------------------------------------------
 
