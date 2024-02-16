@@ -17,7 +17,7 @@ const Navbar = () => {
             <ul className="flex space-x-4">
               {/* Additional links */}
               <li>
-                <Link to="/about" className="text-white">
+                <Link to="/about-us" className="text-white">
                   About
                 </Link>
               </li>

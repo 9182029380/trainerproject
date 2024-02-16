@@ -25,7 +25,7 @@ function App() {
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/trainer-register" element={<TrainerRegister />} />
         <Route path="/contact-us" element={<ContactUs />} />
-        <Route path="/about" element={<About />} />
+        <Route path="/about-us" element={<About />} />
 
         <Route
           path="/admin-dashboard"
@@ -39,12 +39,6 @@ function App() {
             <ProtectedRoute component={TrainerDashboard} roles={["trainer"]} />
           }
         />
-        {/* <Route
-          path="/trainer-dashboard"
-          element={
-            <ProtectedRoute component={TrainerDashboard} roles={["trainer"]} />
-          }
-        /> */}
         <Route
           path="/business-dashboard/:email"
           element={
