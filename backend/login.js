@@ -945,12 +945,22 @@ app.delete("/admincompanies/:id", async (req, res) => {
 //API to display all business requests
 app.get("/adminbusinessrequests", async (req, res) => {
   try {
-    // Fetch data from businessrequest collection and populate companyName from companies collection
-    const data = await BusinessRequest.find().populate({
-      path: "uniqueId", // Field containing the reference
-      model: "Company", // Model to populate from
-      select: "companyName", // Field to select from the referenced document
-    });
+    const data = await BusinessRequest.aggregate([
+      {
+        $lookup: {
+          from: "purchaseorders", // Collection name of purchase order
+          localField: "_id",
+          foreignField: "businessRequestId",
+          as: "purchaseOrders",
+        },
+      },
+      {
+        $match: {
+          purchaseOrders: { $size: 0 }, // Filter out business requests without linked purchase orders
+        },
+      },
+    ]);
+ 
     res.json(data);
   } catch (error) {
     console.error("Error fetching data:", error);
