@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import EditTrainerModal from "./EditTrainerModal"; // Import the modal component
+//import EditTrainerModal from "./EditTrainerModal"; // Import the modal component
 
 const TrainerInvoicesTable = () => {
   const [trainerInvoices, setTrainerInvoices] = useState([]);
@@ -22,9 +22,9 @@ const TrainerInvoicesTable = () => {
   const generateInvoice = async (invoice) => {
     try {
       await axios.post("http://localhost:3001/adminbusinessinvoices", {
+        invoiceId: invoice._id,
         poId: invoice.poId,
         businessId: invoice.businessId,
-
         totalAmount: invoice.amount,
         batches: "Some batches", // You can modify this as needed
         startDate: invoice.startDate,

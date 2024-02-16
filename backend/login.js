@@ -1119,6 +1119,7 @@ app.get("/admintrainerinvoices", async (req, res) => {
 app.post("/adminbusinessinvoices", async (req, res) => {
   try {
     const {
+      invoiceId,
       poId,
       businessId,
       totalAmount,
@@ -1129,6 +1130,10 @@ app.post("/adminbusinessinvoices", async (req, res) => {
       paymentStatus,
     } = req.body;
 
+    await TrainerInvoice.updateMany(
+      { _id: invoiceId },
+      { $set: { paymentStatus: true } }
+    );
     const purchaseOrder = await PurchaseOrder.findById(poId);
     const businessRequest = await BusinessRequest.findById(
       purchaseOrder.businessRequestId

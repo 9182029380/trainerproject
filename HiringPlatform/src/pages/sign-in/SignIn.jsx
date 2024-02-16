@@ -24,11 +24,12 @@ const SignIn = () => {
 
       // Store the token for later use in requests
       localStorage.setItem("token", token);
-      alert(token)
-      alert(email)
+      // alert(token)
+      // alert(email)
 
       // Redirect user based on role
       if (role === "trainer") {
+        alert('Login Successfully!')
         navigate(`/trainer-dashboard/${email}`);
       } else if (role === "company") {
         navigate(`/business-dashboard/${email}`);

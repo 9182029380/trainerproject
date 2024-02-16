@@ -1,36 +1,7 @@
-// import React from 'react'
-
-// const DashboardHome = () => {
-//   return (
-//     <>
-//         {/* Main Content */}
-//        <div className="flex-1 bg-gray-100">
-//          <div className="p-4">
-          
-//            {/* Grid Layout */}
-//            <div className="grid grid-cols-2 gap-4">
-//              <div className="bg-white p-4 shadow-md">
-//                <h2 className="text-lg font-semibold mb-2">No of PO Requests</h2>
-//                <p className="text-gray-700">10</p>
-//              </div>
-//              <div className="bg-white p-4 shadow-md">
-//                <h2 className="text-lg font-semibold mb-2">Current Trainings</h2>
-//                <p className="text-gray-700">5</p>
-//              </div>
-//            </div>``
-//          </div>
-//        </div> 
-
-//     </>
-//   )
-// }
-
-// export default DashboardHome;
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
  
-const DashboardHome = ({ email }) => {
+const DashboardHome = ({ email,setSelectedLink }) => {
   const [count, setCount] = useState(null);
   const [totalTrainings, setTotalTrainings] = useState(null);
   const [currentTrainings, setCurrentTrainings] = useState([]);
@@ -68,7 +39,9 @@ const DashboardHome = ({ email }) => {
         <div className="p-4">
           <h1 className="text-lg font-semibold">TOTAL PURCHASE ORDERS</h1>
           <p className="mt-3 text-gray-600 text-center text-7xl font-bold">{count}</p>
-          <button type="button" className="mt-4 ml-[60%] font-semibold text-black hover:bg-gray-300">
+          <button type="button" className="mt-4 ml-[60%] font-semibold text-black hover:bg-gray-300"
+          onClick={()=>setSelectedLink('po-details')}
+          >
             Know More..
           </button>
         </div>
@@ -77,7 +50,9 @@ const DashboardHome = ({ email }) => {
         <div className="p-4">
           <h1 className="text-lg font-semibold">TOTAL TRAININGS</h1>
           <p className="mt-3 text-gray-600 text-center text-7xl font-bold">{totalTrainings}</p>
-          <button type="button" className="mt-4 ml-[60%] font-semibold text-black hover:bg-gray-300">
+          <button type="button" className="mt-4 ml-[60%] font-semibold text-black hover:bg-gray-300"
+          onClick={()=>setSelectedLink('my-trainings')}
+          >
             Know More..
           </button>
         </div>

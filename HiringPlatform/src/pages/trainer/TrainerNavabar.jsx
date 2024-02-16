@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const TrainerNavbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -23,14 +23,14 @@ const TrainerNavbar = () => {
               Trainer Platform
             </p>
 
-            <Link to="/about-us" className="text-white">
+            {/* <Link to="/about-us" className="text-white">
               About
             </Link>
 
             <Link to="/contact-us" className="text-white">
               Contact Us
-            </Link>
-          </div>
+            </Link>*/}
+          </div> 
 
           <div className="flex items-center relative">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="white" className="w-6 h-6" onMouseDown={() => setIsDropdownOpen(!isDropdownOpen)}>

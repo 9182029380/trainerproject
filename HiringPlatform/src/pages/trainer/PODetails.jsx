@@ -75,7 +75,7 @@ const PODetails = ({ email }) => {
         <div>
           {purchaseOrders.map(order => (
             <div key={order._id} className="border shadow-md p-4 rounded-md mb-4">
-              <div>Business ID: {order.businessId}</div>
+              <div>Business ID: {order.businessRequestId}</div>
               <div>Trainer Email: {order.trainerEmail}</div>
               <div>Amount: {order.amount}</div>
               <div>Status: {order.status ? 'Accepted' : 'Pending'}</div>

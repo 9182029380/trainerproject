@@ -92,7 +92,7 @@ const MyProfile = ({ email }) => {
  
   return (
     <div className="container mx-auto mt-8">
-      <h1 className="text-3xl font-semibold mb-4">My Profile</h1>
+      <h1 className="text-3xl font-semibold mb-4 ml-5">My Profile</h1>
       <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
         {Object.entries(userData).map(([key, value]) => {
           if (excludedFields.includes(key)) {
